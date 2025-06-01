@@ -12,7 +12,7 @@ type SendQuoteService struct {
 }
 
 func (s *SendQuoteService) SendQuote(ctx context.Context, quote *entities.Quote) error {
-	message := fmt.Sprintf("📖 %s\n\n _%s_ ✍️", quote.Text, quote.Author)
+	message := fmt.Sprintf("📖 %s\n\n✍️ «%s»", quote.Text, quote.Author)
 
 	if err := s.telegram.SendMessage(ctx, message); err != nil {
 		return fmt.Errorf("failed to send the message: %w", err)

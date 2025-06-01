@@ -8,11 +8,13 @@ import (
 )
 
 type Config struct {
+	Debug    bool
 	BotToken string
 	ChatId   int64
 }
 
 func LoadConfig(logger *slog.Logger) (*Config, error) {
+	env := os.Getenv("ENV")
 	botToken := os.Getenv("BOT_TOKEN")
 	chatId := os.Getenv("CHAT_ID")
 
@@ -27,5 +29,5 @@ func LoadConfig(logger *slog.Logger) (*Config, error) {
 		return nil, errors.New("cannot parse CHAT_ID into int64")
 	}
 
-	return &Config{BotToken: botToken, ChatId: chatIdInt}, nil
+	return &Config{BotToken: botToken, ChatId: chatIdInt, Debug: env == "DEBUG"}, nil
 }

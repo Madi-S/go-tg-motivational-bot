@@ -44,38 +44,15 @@ func main() {
 	translatorService := usecases.NewTranslatorService(translator)
 	sendQuoteService := usecases.NewSendQuoteService(telegramAdapter)
 
+	if cfg.Debug {
+		doTheMagic(logger, *fetchQuotesService, *translatorService, *sendQuoteService)
+	}
+
 	c := cron.New()
 	defer c.Stop()
 
 	_, err = c.AddFunc("0 4,8,14,18 * * *", func() {
-		ctx := context.Background()
-
-		quote, err := fetchQuotesService.FetchQuote(ctx)
-		if err != nil {
-			logger.Error("failed to fetch quotes", "error", err)
-			os.Exit(1)
-		}
-		logger.Debug("successfully fetched a random quote", "text", quote.Text, "author", quote.Author)
-
-		translatedQuoteText, err := translatorService.Translate(ctx, quote.Text)
-		if err != nil {
-			logger.Error("failed to translate quote text", "error", err)
-			os.Exit(1)
-		}
-		translatedQuoteAuthor, err := translatorService.Translate(ctx, quote.Author)
-		if err != nil {
-			logger.Error("failed to translate quote author", "error", err)
-			os.Exit(1)
-		}
-
-		quote.Text = translatedQuoteText
-		quote.Author = translatedQuoteAuthor
-		logger.Debug("successfully translated quote", "text", quote.Text, "author", quote.Author)
-
-		if err := sendQuoteService.SendQuote(ctx, quote); err != nil {
-			logger.Error("failed to send quote", "error", err)
-			os.Exit(1)
-		}
+		doTheMagic(logger, *fetchQuotesService, *translatorService, *sendQuoteService)
 	})
 	if err != nil {
 		logger.Error("failed to add cronjob", "error", err)
@@ -87,4 +64,35 @@ func main() {
 
 	// Infinite loop
 	select {}
+}
+
+func doTheMagic(logger *slog.Logger, fetchQuotesService usecases.FetchQuoteService, translatorService usecases.TranslatorService, sendQuoteService usecases.SendQuoteService) {
+	ctx := context.Background()
+
+	quote, err := fetchQuotesService.FetchQuote(ctx)
+	if err != nil {
+		logger.Error("failed to fetch quotes", "error", err)
+		os.Exit(1)
+	}
+	logger.Debug("successfully fetched a random quote", "text", quote.Text, "author", quote.Author)
+
+	translatedQuoteText, err := translatorService.Translate(ctx, quote.Text)
+	if err != nil {
+		logger.Error("failed to translate quote text", "error", err)
+		os.Exit(1)
+	}
+	translatedQuoteAuthor, err := translatorService.Translate(ctx, quote.Author)
+	if err != nil {
+		logger.Error("failed to translate quote author", "error", err)
+		os.Exit(1)
+	}
+
+	quote.Text = translatedQuoteText
+	quote.Author = translatedQuoteAuthor
+	logger.Debug("successfully translated quote", "text", quote.Text, "author", quote.Author)
+
+	if err := sendQuoteService.SendQuote(ctx, quote); err != nil {
+		logger.Error("failed to send quote", "error", err)
+		os.Exit(1)
+	}
 }
