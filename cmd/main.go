@@ -52,7 +52,7 @@ func main() {
 	c := cron.New()
 	defer c.Stop()
 
-	_, err = c.AddFunc("0 4,8,14,18 * * *", func() {
+	_, err = c.AddFunc("0 3,5,7,9,11,13,15,17 * * *", func() {
 		doTheMagic(logger, *fetchQuotesService, *translatorService, *sendQuoteService)
 	})
 	if err != nil {
