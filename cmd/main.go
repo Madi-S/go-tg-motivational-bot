@@ -45,6 +45,7 @@ func main() {
 	sendQuoteService := usecases.NewSendQuoteService(telegramAdapter)
 
 	if cfg.Debug {
+		logger.Debug("running instantly due to debug mode")
 		doTheMagic(logger, *fetchQuotesService, *translatorService, *sendQuoteService)
 	}
 
